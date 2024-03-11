@@ -1,0 +1,7 @@
+- Senin, 11 Maret 2024 08:21:41
+  - Added Explore job feature
+  - Added job applying feature
+  - Added job saving feature
+  - Added job searching feature (category, sorting, paginate by loading more, search)
+  - Added Job Seeker Authentication (Not Employer)
+  - Added companies finding feature

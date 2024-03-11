@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ApplicationStatus {
+  RECEIVED
+  UNDER_REVIEW
+  INTERVIEW
+  REJECTED
+  APPROVED
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  email        String       @unique
+  fullName     String
+  password     String
+  photoProfile String?
+  employer     Employer?
+  Application  Application?
+  SavedJob     SavedJob[]
+
+  @@map("Users")
+}
+
+model Employer {
+  id        Int     @id @default(autoincrement())
+  userId    Int     @unique
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  companyId Int     @unique
+  company   Company @relation(fields: [companyId], references: [id], onDelete: NoAction)
+  Job       Job[]
+
+  @@map("Employers")
+}
+
+model Company {
+  id       Int        @id @default(autoincrement())
+  name     String
+  location String
+  about    String?
+  industry String?
+  logo     String?
+  slug     String
+  employer Employer[]
+  Job      Job[]
+
+  @@map("Companies")
+}
+
+model JobCategory {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+  slug String @unique
+  Job  Job[]
+
+  @@map("JobCategories")
+}
+
+model Job {
+  id            Int           @id @default(autoincrement())
+  employerId    Int
+  employer      Employer      @relation(fields: [employerId], references: [id], onDelete: NoAction)
+  companyId     Int
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  jobCategoryId Int
+  category      JobCategory   @relation(fields: [jobCategoryId], references: [id])
+  title         String
+  description   String
+  requirements  String
+  salary        Decimal
+  location      String
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime?
+  deletedAt     DateTime?
+  Application   Application[]
+  SavedJob      SavedJob[]
+
+  @@map("Jobs")
+}
+
+model Application {
+  id          Int               @id @default(autoincrement())
+  jobSeekerId Int               @unique
+  jobSeeker   User              @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+  jobId       Int
+  job         Job               @relation(fields: [jobId], references: [id], onDelete: Restrict)
+  status      ApplicationStatus @default(RECEIVED)
+  createdAt   DateTime          @default(now())
+  deletedAt   DateTime?
+
+  @@map("Applications")
+}
+
+model SavedJob {
+  id          Int  @id @default(autoincrement())
+  jobSeekerId Int
+  jobSeeker   User @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+  jobId       Int
+  job         Job  @relation(fields: [jobId], references: [id], onDelete: Restrict)
+
+  @@map("SavedJobs")
+}
+
+// model Experience {}
+// model Education {}
+// model Skill {}
