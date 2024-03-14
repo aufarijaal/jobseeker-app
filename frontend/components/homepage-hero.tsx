@@ -3,7 +3,7 @@ import React from 'react'
 function HomepageHero() {
   return (
     <div id="hero" className="mt-16 flex flex-col items-center gap-4">
-      <img src="/github.svg" width="32" height="32" alt="brand logo" />
+      <img src="/jobseeker_logo.svg" width="32" height="32" alt="brand logo" />
       <h1 className="font-bold text-6xl text-center">
         Start reach your success!
       </h1>

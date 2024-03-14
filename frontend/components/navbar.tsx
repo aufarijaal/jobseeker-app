@@ -18,7 +18,7 @@ export default function Navbar() {
                 className="dark:text-gray-300 dark:hover:text-white"
                 href="/"
               >
-                <img src="/github.svg" width="24" height="24" />
+                <img src="/jobseeker_logo.svg" width="24" height="24" />
               </Link>
             </li>
             <li>

@@ -44,11 +44,23 @@ router.post(
         },
       })
 
-      const accessToken = generateAccessToken({ userId: user.id })
-      const refreshToken = generateRefreshToken({ userId: user.id })
+      const accessToken = generateAccessToken({
+        userId: user.id,
+        role: 'JOBSEEKER',
+      })
+      const refreshToken = generateRefreshToken({
+        userId: user.id,
+        role: 'JOBSEEKER',
+      })
 
-      res.cookie('accessToken', accessToken, {...cookieOptions, maxAge: 3_600_000})
-      res.cookie('refreshToken', refreshToken, {...cookieOptions, maxAge: 3_600_000 * 2})
+      res.cookie('accessToken', accessToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      res.cookie('refreshToken', refreshToken, {
+        ...cookieOptions,
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+      })
       res.send({ message: 'Signed up successfully', accessToken, refreshToken })
     } catch (error: any | Prisma.PrismaClientKnownRequestError) {
       if (error && error.meta.target[0] === 'email') {
@@ -96,11 +108,23 @@ router.post(
           .json({ message: 'Invalid email or password' })
       }
 
-      const accessToken = generateAccessToken({ userId: foundUser.id })
-      const refreshToken = generateRefreshToken({ userId: foundUser.id })
+      const accessToken = generateAccessToken({
+        userId: foundUser.id,
+        role: 'JOBSEEKER',
+      })
+      const refreshToken = generateRefreshToken({
+        userId: foundUser.id,
+        role: 'JOBSEEKER',
+      })
 
-      res.cookie('accessToken', accessToken, {...cookieOptions, maxAge: 3_600_000})
-      res.cookie('refreshToken', refreshToken, {...cookieOptions, maxAge: 3_600_000 * 2})
+      res.cookie('accessToken', accessToken, {
+        ...cookieOptions,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
+      res.cookie('refreshToken', refreshToken, {
+        ...cookieOptions,
+        maxAge: 365 * 24 * 60 * 60 * 1000,
+      })
       res.send({ message: 'Signed in successfully', accessToken, refreshToken })
     } catch (error: any) {
       if (error && error.name === 'NotFoundError') {
@@ -115,22 +139,29 @@ router.post(
 
 router.post('/refresh-token', async (req: Request, res: Response) => {
   try {
-    const {refreshToken} = req.cookies
+    const { refreshToken } = req.cookies
 
-    if(!refreshToken) {
-      return res.status(StatusCodes.UNAUTHORIZED).send({message: 'Token is not being provided'})
+    if (!refreshToken) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .send({ message: 'Token is not being provided' })
     }
 
-    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET as string)
+    const payload = jwt.verify(
+      refreshToken,
+      process.env.JWT_REFRESH_SECRET as string
+    )
 
-    if(!payload) {
-      return res.status(StatusCodes.UNAUTHORIZED).send({message: 'Invalid token'})
+    if (!payload) {
+      return res
+        .status(StatusCodes.UNAUTHORIZED)
+        .send({ message: 'Invalid token' })
     }
 
     const newAccessToken = generateAccessToken(payload)
 
     res.cookie('token', newAccessToken, cookieOptions)
-    res.send({message: 'OK', accessToken: newAccessToken})
+    res.send({ message: 'OK', accessToken: newAccessToken })
   } catch (error) {
     res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error)
   }
@@ -148,12 +179,12 @@ router.post('/signout', (req, res) => {
   res.cookie('accessToken', '', {
     ...cookieOptions,
     maxAge: -1,
-    path: '/'
+    path: '/',
   })
   res.cookie('refreshToken', '', {
     ...cookieOptions,
     maxAge: -1,
-    path: '/'
+    path: '/',
   })
   res.send()
 })

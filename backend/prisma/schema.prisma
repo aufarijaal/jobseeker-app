@@ -16,14 +16,15 @@ enum ApplicationStatus {
 }
 
 model User {
-  id           Int          @id @default(autoincrement())
-  email        String       @unique
-  fullName     String
-  password     String
-  photoProfile String?
-  employer     Employer?
-  Application  Application?
-  SavedJob     SavedJob[]
+  id             Int              @id @default(autoincrement())
+  email          String           @unique
+  fullName       String
+  password       String
+  photoProfile   String?
+  employer       Employer?
+  Application    Application?
+  SavedJob       SavedJob[]
+  JobSeekerSkill JobSeekerSkill[]
 
   @@map("Users")
 }
@@ -109,4 +110,22 @@ model SavedJob {
 
 // model Experience {}
 // model Education {}
-// model Skill {}
+model Skill {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  slug           String           @unique
+  JobSeekerSkill JobSeekerSkill[]
+
+  @@map("Skills")
+}
+
+model JobSeekerSkill {
+  id          Int  @id @default(autoincrement())
+  jobSeekerId Int
+  jobSeeker   User @relation(fields: [jobSeekerId], references: [id], onDelete: Cascade)
+
+  skillId Int
+  skill   Skill @relation(fields: [skillId], references: [id], onDelete: Restrict)
+
+  @@map("JobSeekerSkills")
+}

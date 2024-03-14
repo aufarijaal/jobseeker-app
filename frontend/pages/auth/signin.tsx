@@ -18,10 +18,12 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import axios from '@/lib/axios'
 import Head from 'next/head'
 import { useAuth } from '@/context/authContext'
+import { useRouter } from 'next/router'
 
 const Signin = () => {
   const [showpass, setshowpass] = useState(false)
   const [responseMsg, setResponseMsg] = useState('')
+  const router = useRouter()
 
   const formSchema = z.object({
     email: z.string().min(1).email().trim(),
@@ -32,7 +34,7 @@ const Signin = () => {
     resolver: zodResolver(formSchema),
   })
 
-  const {signin} = useAuth()
+  const { signin } = useAuth()
 
   async function onSubmit() {
     signin(form.getValues())
@@ -50,6 +52,8 @@ const Signin = () => {
             <div className="text-sm dark:text-gray-500">
               Sign in to your existing account.
             </div>
+
+            <div className="font-semibold text-sm">{router.query.message}</div>
           </div>
 
           <Form {...form}>

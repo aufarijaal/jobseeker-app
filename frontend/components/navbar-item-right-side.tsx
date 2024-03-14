@@ -72,8 +72,24 @@ function NavbarItemRightSide() {
                 </div>
                 <div className="h-px w-full dark:bg-border"></div>
                 <div className="p-1">
+                  <Link
+                    className="text-sm p-2 w-full justify-start"
+                    href="/account/profile"
+                  >
+                    Profile
+                  </Link>
+                </div>
+                <div className="p-1">
+                  <Link
+                    className="text-sm p-2 w-full justify-start"
+                    href="/account/settings"
+                  >
+                    Account Settings
+                  </Link>
+                </div>
+                <div className="p-1">
                   <Button
-                    variant="ghost"
+                    variant="destructive"
                     className="text-sm p-2 w-full justify-start"
                     onClick={signout}
                   >

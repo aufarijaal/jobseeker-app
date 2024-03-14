@@ -30,7 +30,7 @@ interface ContextProps {
   signin: Signin
   signup: Signup
   signout: Signout
-  status: undefined | 'loggedOut' | 'loggedIn',
+  status: undefined | 'loggedOut' | 'loggedIn'
   loading: boolean
 }
 
@@ -66,7 +66,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       setLoading(true)
       const result = await axios.post('/auth/signup', credentials)
-      
+
       if (result.status === 200) {
         setStatus('loggedIn')
         getMe()
@@ -114,7 +114,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, signin, signup, signout, status, loading }}>
+    <AuthContext.Provider
+      value={{ user, signin, signup, signout, status, loading }}
+    >
       {children}
     </AuthContext.Provider>
   )

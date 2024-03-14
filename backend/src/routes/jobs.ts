@@ -77,11 +77,11 @@ router.get('/', exctractUserId, async (req: Request, res: Response) => {
   })
 
   if (!jobs.length) {
-    return {
+    return res.send({
       data: [],
       page: currentPage,
       nextPage: null,
-    }
+    })
   }
 
   const savedJobsId = await prisma.savedJob
@@ -97,9 +97,6 @@ router.get('/', exctractUserId, async (req: Request, res: Response) => {
       return savedJobs.map((savedJob) => savedJob.jobId)
     })
     .catch(() => [])
-
-  console.log(`userId: ${(req as any).userId}`)
-  console.log(`typeof userId ${typeof (req as any).userId}`)
 
   const formattedJobsData = jobs.map((job) => {
     let savedByThisJobSeeker = false

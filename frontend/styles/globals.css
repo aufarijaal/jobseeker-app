@@ -47,4 +47,16 @@
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
   }
+
+  .tag-item {
+    @apply text-xs dark:bg-zinc-800 w-max h-max px-2.5 py-1 rounded-md select-none flex items-center gap-2;
+  }
+
+  .tag-result-item {
+    @apply h-[30px] bg-inherit dark:hover:bg-zinc-800 px-2 flex items-center rounded-md text-sm w-full;
+  }
+
+  .button-remove-tag {
+    @apply dark:bg-zinc-600 p-0.5 dark:text-white rounded-sm dark:hover:bg-zinc-500 transition-colors;
+  }
 }

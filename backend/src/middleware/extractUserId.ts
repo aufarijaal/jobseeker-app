@@ -8,8 +8,6 @@ function exctractUserId(req: any, res: Response, next: NextFunction) {
     const decoded: any = accessToken
       ? jwt.verify(accessToken, process.env.JWT_SECRET as string)
       : { userId: null }
-    console.log(`secret: ${process.env.JWT_SECRET}`)
-    console.log(`accessToken: ${accessToken}`)
 
     req.userId = decoded.userId
     next()
