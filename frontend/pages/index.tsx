@@ -36,24 +36,36 @@ import {
 } from '@/components/ui/card'
 import { formatLastActive } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
+import { AxiosError } from 'axios'
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const result = await axios.get('/jobs', {
-    params: {
-      sortBy: ctx.query.sortBy,
-      q: ctx.query.q,
-      page: 1,
-      jobCategory: ctx.query.jobCategory,
-    },
-    headers: {
-      Authorization: ctx.req.cookies.accessToken,
-    },
-  })
+  try {
+    const result = await axios.get('/jobs', {
+      params: {
+        sortBy: ctx.query.sortBy,
+        q: ctx.query.q,
+        page: 1,
+        jobCategory: ctx.query.jobCategory,
+      },
+      headers: {
+        Authorization: ctx.req.cookies.accessToken,
+      },
+    })
 
-  return {
-    props: {
-      jobs: result.data.data,
-    },
+    return {
+      props: {
+        jobs: result.data.data,
+      },
+    }
+  } catch (error) {
+    return {
+      redirect: {
+        destination: '/auth/signin',
+      },
+      props: {
+        jobs: [],
+      },
+    }
   }
 }
 
@@ -341,7 +353,7 @@ export default function Home({ jobs }: any) {
                       <JobCard
                         jobInfo={job}
                         key={job.id}
-                        afterSaving={handleSearchAndFilter}
+                        afterToggling={handleSearchAndFilter}
                       />
                     )
                   })

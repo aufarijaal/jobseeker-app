@@ -43,7 +43,7 @@ const Signin = () => {
   return (
     <>
       <Head>
-        <title>Sign in</title>
+        <title>Sign in | JobSeeker</title>
       </Head>
       <main className="min-h-screen w-full grid place-items-center">
         <div className="w-[300px]">

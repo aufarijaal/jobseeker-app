@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Enums
+
 enum ApplicationStatus {
   RECEIVED
   UNDER_REVIEW
@@ -15,16 +17,34 @@ enum ApplicationStatus {
   APPROVED
 }
 
+enum EducationLevel {
+  SD
+  SMP
+  SMA
+  DIPLOMA_1
+  DIPLOMA_2
+  DIPLOMA_3
+  DIPLOMA_4
+  SARJANA
+  MAGISTER
+  DOKTOR
+}
+
+// Models
+
 model User {
   id             Int              @id @default(autoincrement())
   email          String           @unique
   fullName       String
   password       String
   photoProfile   String?
+  about          String?
   employer       Employer?
   Application    Application?
   SavedJob       SavedJob[]
   JobSeekerSkill JobSeekerSkill[]
+  JobExperience  JobExperience[]
+  Education      Education[]
 
   @@map("Users")
 }
@@ -108,8 +128,29 @@ model SavedJob {
   @@map("SavedJobs")
 }
 
-// model Experience {}
-// model Education {}
+model JobExperience {
+  id          Int    @id @default(autoincrement())
+  title       String
+  companyName String
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("JobExperiences")
+}
+
+model Education {
+  id          Int            @id @default(autoincrement())
+  level       EducationLevel
+  institution String
+  major       String
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("Educations")
+}
+
 model Skill {
   id             Int              @id @default(autoincrement())
   name           String           @unique

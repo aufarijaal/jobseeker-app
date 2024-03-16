@@ -45,7 +45,7 @@ const Signup = () => {
   return (
     <>
       <Head>
-        <title>Job Seeker Sign up</title>
+        <title>Sign up | JobSeeker</title>
       </Head>
       <main className="min-h-screen w-full grid place-items-center">
         <div className="w-[400px]">

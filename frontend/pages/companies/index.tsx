@@ -26,7 +26,7 @@ const CompaniesPage: NextPage = () => {
       }
 
       const result = await axios.get('/companies', {
-        params
+        params,
       })
 
       setCompanies(result.data.data.companies)
@@ -44,7 +44,7 @@ const CompaniesPage: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Companies</title>
+        <title>Companies | JobSeeker</title>
       </Head>
       <main className="pt-20">
         <div className="max-w-7xl mx-auto px-4 pb-10">

@@ -7,7 +7,7 @@ import NavbarItemRightSide from './navbar-item-right-side'
 export default function Navbar() {
   return (
     <nav
-      className="bg-background w-full h-[50px] border-b border-border text-xs font-semibold fixed top-0 left-0 px-4"
+      className="bg-background w-full h-[50px] border-b border-border text-xs font-semibold fixed top-0 left-0 px-4 z-50"
       id="navbar"
     >
       <div className="max-w-7xl mx-auto flex items-center justify-between h-full">

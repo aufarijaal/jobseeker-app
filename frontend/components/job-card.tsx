@@ -44,25 +44,30 @@ export function JobCard(props: {
     }
     savedByThisJobSeeker: boolean
   }
-  afterSaving: () => void
+  afterToggling: () => void
 }) {
   const { user, status } = useAuth()
   const router = useRouter()
 
-  async function saveThisJob(e: any) {
+  async function toggleSaveJob(e: any) {
     try {
       e.stopPropagation()
       e.preventDefault()
 
       if (user && status === 'loggedIn') {
-        await axios.post('/saved-jobs/', {
-          jobId: props.jobInfo.id,
-        })
+        if (props.jobInfo.savedByThisJobSeeker) {
+          await axios.delete('/saved-jobs/', {
+            data: {
+              jobId: props.jobInfo.id,
+            },
+          })
+        } else {
+          await axios.post('/saved-jobs/', {
+            jobId: props.jobInfo.id,
+          })
+        }
 
-        props.afterSaving()
-        return toast('Job saved successfully!', {
-          icon: <InfoCircledIcon />,
-        })
+        return props.afterToggling()
       }
 
       router.push('/auth/signin')
@@ -107,7 +112,7 @@ export function JobCard(props: {
           </div>
 
           <Button
-            onClick={saveThisJob}
+            onClick={toggleSaveJob}
             variant={
               props.jobInfo.savedByThisJobSeeker ? 'secondary' : 'default'
             }

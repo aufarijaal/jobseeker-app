@@ -1,55 +1,57 @@
 import { Input } from '@/components/ui/input'
-import React from 'react'
-import { useForm } from 'react-hook-form'
+import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useAuth } from '@/context/authContext'
+import { Label } from '@/components/ui/label'
+import axios from 'axios'
+import { toast } from 'sonner'
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
 
 function EmailSettingForm() {
-  const formSchema = z.object({
-    email: z.string().min(1).email().trim(),
-  })
+  const { user } = useAuth()
+  const [value, setValue] = useState(user?.email)
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  })
+  async function submit(e: any) {
+    try {
+      e.preventDefault()
 
-  async function onSubmit() {}
+      await axios.put('/account/email', {
+        email: value,
+      })
+
+      window.location.reload()
+    } catch (error: any) {
+      if (error.response.status === 409) {
+        return toast('Email already in use', {
+          icon: <ExclamationTriangleIcon className="text-orange-500" />,
+        })
+      }
+
+      toast(error.message)
+    }
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
+    <form onSubmit={submit}>
+      <div className="flex flex-col gap-4">
+        <Label htmlFor="email" className="font-medium text-lg">
+          Email
+        </Label>
+        <Input
+          id="email"
           name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg">Email</FormLabel>
-              <FormControl>
-                <Input
-                  type="email"
-                  required
-                  placeholder="abc@xyz.com"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          defaultValue={user?.email}
+          required
+          onChange={(e) => setValue(e.currentTarget.value)}
         />
+      </div>
 
-        <Button type="submit" variant="secondary">
-          Submit
+      <div className="mt-4">
+        <Button variant="secondary" type="submit">
+          Change
         </Button>
-      </form>
-    </Form>
+      </div>
+    </form>
   )
 }
 

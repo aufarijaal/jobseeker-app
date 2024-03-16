@@ -23,6 +23,44 @@ savedJobsRouter.post('/', verifyToken, async (req: Request, res: Response) => {
   }
 })
 
+savedJobsRouter.delete(
+  '/',
+  verifyToken,
+  async (req: Request, res: Response) => {
+    try {
+      const { jobId } = req.body
+
+      const foundSavedJob = await prisma.savedJob.findFirst({
+        where: {
+          jobId,
+          jobSeekerId: (req as any).userId,
+        },
+        select: {
+          id: true,
+        },
+      })
+
+      if (!foundSavedJob) {
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send('There is no saved job with this id')
+      }
+
+      await prisma.savedJob.delete({
+        where: {
+          id: foundSavedJob.id,
+          jobId,
+          jobSeekerId: (req as any).userId,
+        },
+      })
+
+      res.status(StatusCodes.NO_CONTENT).send()
+    } catch (error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error)
+    }
+  }
+)
+
 savedJobsRouter.get('/', verifyToken, async (req: Request, res: Response) => {
   try {
     const savedJobs = await prisma.savedJob.findMany({

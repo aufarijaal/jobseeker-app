@@ -12,11 +12,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  if (request.nextUrl.pathname.startsWith('/auth')) {
-    if (accessToken) {
-      return NextResponse.redirect(new URL('/', request.url))
-    }
-  }
+  // if (request.nextUrl.pathname.startsWith('/auth')) {
+  //   if (accessToken) {
+  //     return NextResponse.redirect(new URL('/', request.url))
+  //   }
+  // }
 
   return NextResponse.next()
 }

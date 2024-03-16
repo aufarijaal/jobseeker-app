@@ -1,49 +1,50 @@
 import { Input } from '@/components/ui/input'
-import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormMessage,
-} from '@/components/ui/form'
-import { z } from 'zod'
-import { zodResolver } from '@hookform/resolvers/zod'
+import { useAuth } from '@/context/authContext'
+import { useState } from 'react'
+import { toast } from 'sonner'
+import { Label } from '../ui/label'
+import axios from '@/lib/axios'
 
 function NameSettingForm() {
-  const formSchema = z.object({
-    name: z.string().min(1).trim(),
-  })
+  const { user } = useAuth()
+  const [value, setValue] = useState(user?.fullName)
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-  })
+  async function submit(e: any) {
+    try {
+      e.preventDefault()
 
-  async function onSubmit() {}
+      await axios.put('/account/name', {
+        fullName: value,
+      })
+
+      window.location.reload()
+    } catch (error: any) {
+      toast(error.message)
+    }
+  }
+
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <FormField
-          control={form.control}
+    <form onSubmit={submit}>
+      <div className="flex flex-col gap-4">
+        <Label htmlFor="name" className="font-medium text-lg">
+          Full Name
+        </Label>
+        <Input
+          id="name"
           name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-lg">Full name</FormLabel>
-              <FormControl>
-                <Input type="text" required placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          defaultValue={user?.fullName}
+          required
+          onChange={(e) => setValue(e.currentTarget.value)}
         />
+      </div>
 
-        <Button type="submit" variant="secondary">
-          Submit
+      <div className="mt-4">
+        <Button variant="secondary" type="submit">
+          Change
         </Button>
-      </form>
-    </Form>
+      </div>
+    </form>
   )
 }
 

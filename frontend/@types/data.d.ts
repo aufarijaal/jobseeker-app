@@ -1,0 +1,11 @@
+type EducationLevel =
+  | 'SD'
+  | 'SMP'
+  | 'SMA'
+  | 'DIPLOMA_1'
+  | 'DIPLOMA_2'
+  | 'DIPLOMA_3'
+  | 'DIPLOMA_4'
+  | 'SARJANA'
+  | 'MAGISTER'
+  | 'DOKTOR'

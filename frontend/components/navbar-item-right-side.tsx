@@ -5,7 +5,7 @@ import {
 } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { BellIcon, TriangleDownIcon } from '@radix-ui/react-icons'
-import axios, { AxiosError } from 'axios'
+import axios from '@/lib/axios'
 import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import { redirect, useRouter } from 'next/navigation'

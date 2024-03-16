@@ -12,12 +12,18 @@ import {
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
-import { EyeClosedIcon, EyeOpenIcon } from '@radix-ui/react-icons'
+import {
+  ExclamationTriangleIcon,
+  EyeClosedIcon,
+  EyeOpenIcon,
+} from '@radix-ui/react-icons'
+import { toast } from 'sonner'
+import axios from '@/lib/axios'
 
 function PasswordSettingForm() {
   const formSchema = z
     .object({
-      oldPassword: z.string().min(6),
+      oldPassword: z.string(),
       password: z.string().min(6),
       passwordConfirm: z.string().min(6),
     })
@@ -33,7 +39,23 @@ function PasswordSettingForm() {
   const [showPass, setShowPass] = useState(false)
   const [showPassConfirm, setShowPassConfirm] = useState(false)
 
-  async function onSubmit() {}
+  async function onSubmit() {
+    try {
+      await axios.put('/account/password', {
+        oldPassword: form.getValues('oldPassword'),
+        newPassword: form.getValues('password'),
+      })
+
+      window.location.reload()
+    } catch (error: any) {
+      if (error.response.status === 400) {
+        return toast(error.response.data.message, {
+          icon: <ExclamationTriangleIcon className="text-rose-500" />,
+        })
+      }
+      toast(error.message)
+    }
+  }
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

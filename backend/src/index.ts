@@ -13,6 +13,8 @@ import { default as authRoutes } from './routes/auth'
 import { default as accountRoutes } from './routes/account'
 import { default as jobCategoryRoutes } from './routes/job-category'
 import { default as jobRoutes } from './routes/jobs'
+import { default as educationRoutes } from './routes/education'
+import { default as experienceRoutes } from './routes/experience'
 import applicationRouter from './routes/applications'
 import savedJobsRouter from './routes/saved-jobs'
 
@@ -43,6 +45,8 @@ app.use('/job-categories', jobCategoryRoutes)
 app.use('/jobs', jobRoutes)
 app.use('/applications', applicationRouter)
 app.use('/saved-jobs', savedJobsRouter)
+app.use('/experiences', experienceRoutes)
+app.use('/educations', educationRoutes)
 expressListRoutes(app)
 
 const server = app.listen(3001, () =>

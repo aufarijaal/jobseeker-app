@@ -15,6 +15,8 @@ import axios from '@/lib/axios'
 import TagItem from './skill-item'
 import { Button } from './ui/button'
 import { toast } from 'sonner'
+import { AxiosError } from 'axios'
+import { Skeleton } from './ui/skeleton'
 
 interface Props {
   name: string
@@ -36,7 +38,7 @@ const SkillManagement: React.FC<Props> = (props) => {
     { id: number; name: string; slug: string }[]
   >([])
   const [editMode, setEditMode] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   async function getSkillList() {
     const exceptionIdsParams = new URLSearchParams()
@@ -53,26 +55,35 @@ const SkillManagement: React.FC<Props> = (props) => {
   }
 
   async function getSkillFromDb() {
-    const result = await axios.get('/misc/job-seeker-skills')
+    try {
+      setLoading(true)
+      const result = await axios.get('/misc/job-seeker-skills')
 
-    setSkillsFromDb(
-      result.data.data.map((item: any) => {
-        return {
-          id: item.skill.id,
-          name: item.skill.name,
-          slug: item.skill.slug,
-        }
-      })
-    )
-    setInitialSkillsFromDb(
-      result.data.data.map((item: any) => {
-        return {
-          id: item.skill.id,
-          name: item.skill.name,
-          slug: item.skill.slug,
-        }
-      })
-    )
+      setSkillsFromDb(
+        result.data.data.map((item: any) => {
+          return {
+            id: item.skill.id,
+            name: item.skill.name,
+            slug: item.skill.slug,
+          }
+        })
+      )
+      setInitialSkillsFromDb(
+        result.data.data.map((item: any) => {
+          return {
+            id: item.skill.id,
+            name: item.skill.name,
+            slug: item.skill.slug,
+          }
+        })
+      )
+    } catch (error: AxiosError | any) {
+      if (error?.response?.status === 401) {
+        window.location.href = '/auth/signin'
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   async function submitChange() {
@@ -128,26 +139,34 @@ const SkillManagement: React.FC<Props> = (props) => {
       </Label>
 
       <div className="tag-list flex gap-2 mt-4 max-w-[500px] flex-wrap">
-        {skillsFromDb.map((item) => {
-          return (
-            <TagItem
-              key={`${item.id}-${item.name}`}
-              isEditing={editMode}
-              onRemoveBtnClick={() => removeItem(item.id)}
-            >
-              {item.name}
-            </TagItem>
-          )
-        })}
+        {!loading
+          ? skillsFromDb.map((item) => {
+              return (
+                <TagItem
+                  key={`${item.id}-${item.name}`}
+                  isEditing={editMode}
+                  onRemoveBtnClick={() => removeItem(item.id)}
+                >
+                  {item.name}
+                </TagItem>
+              )
+            })
+          : Array.from({ length: 10 }, (v, i) => {
+              return (
+                <Skeleton className="w-[80px] h-[24px] rounded-md" key={i} />
+              )
+            })}
 
-        {!editMode && (
+        {!editMode && !loading && (
           <button
-            className="text-xs dark:bg-green-600 w-max dark:hover:bg-green-500 transition-colors px-2.5 py-1 rounded-md select-none flex items-center gap-2 h-[27px]"
+            className="text-xs dark:bg-green-600 w-max dark:hover:bg-green-500 transition-colors px-2 py-1 rounded-md select-none flex items-center gap-2"
             onClick={() => setEditMode(true)}
           >
             <Pencil1Icon />
           </button>
         )}
+
+        {loading && <Skeleton className="w-[31px] h-[23px] rounded-md" />}
 
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>

@@ -39,6 +39,45 @@ export function formatLastActive(lastActiveString: string) {
   }
 }
 
-export function generateCompanyLogoUrl(logo:string) {
+export function generateCompanyLogoUrl(logo: string) {
   return `${process.env.NEXT_PUBLIC_SERVER_HOST}/company-logos/${logo}`
+}
+
+export function generatePhotoProfileUrl(photo: string) {
+  return `${process.env.NEXT_PUBLIC_SERVER_HOST}/photo-profiles/${photo}`
+}
+
+export function parseEducationLevel(level: string) {
+  let parsed = ''
+
+  switch (level) {
+    case 'DIPLOMA_1':
+      parsed = 'D3'
+      break
+    case 'DIPLOMA_2':
+      parsed = 'D2'
+      break
+    case 'DIPLOMA_3':
+      parsed = 'D3'
+      break
+    case 'DIPLOMA_4':
+      parsed = 'D4'
+      break
+    case 'SARJANA':
+      parsed = 'S1'
+      break
+    case 'MAGISTER':
+      parsed = 'S2'
+      break
+    case 'DOKTOR':
+      parsed = 'S3'
+      break
+    case 'SD':
+    case 'SMP':
+    case 'SMA':
+    default:
+      break
+  }
+
+  return parsed
 }
