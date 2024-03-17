@@ -2,21 +2,44 @@ import { JobCard } from '@/components/job-card'
 import { JobCardAlt } from '@/components/job-card-alt'
 import Navbar from '@/components/navbar'
 import { Button } from '@/components/ui/button'
-import { BookmarkIcon, DrawingPinIcon, IdCardIcon } from '@radix-ui/react-icons'
+import {
+  BookmarkFilledIcon,
+  BookmarkIcon,
+  DrawingPinIcon,
+  IdCardIcon,
+} from '@radix-ui/react-icons'
 import { GetServerSideProps } from 'next'
 import Link from 'next/link'
 import React, { useState } from 'react'
 import axios from '@/lib/axios'
 import { generateCompanyLogoUrl } from '@/lib/utils'
 import Head from 'next/head'
+import { toast } from 'sonner'
+import { useAuth } from '@/context/authContext'
+import { useRouter } from 'next/router'
 
 export const getServerSideProps: GetServerSideProps = async (ctx) => {
-  const jobDetailResult = await axios.get(`/jobs/${ctx.params?.jobId}`)
+  const jobDetailResult = await axios.get(`/jobs/${ctx.params?.jobId}`, {
+    headers: {
+      Authorization: ctx.req.cookies.accessToken,
+    },
+  })
+
   const similarJobsResult = await axios.get(
-    `/jobs/${ctx.params?.jobId}/get-similar`
+    `/jobs/${ctx.params?.jobId}/get-similar`,
+    {
+      headers: {
+        Authorization: ctx.req.cookies.accessToken,
+      },
+    }
   )
   const moreJobsCompany = await axios.get(
-    `/jobs/${ctx.params?.jobId}/get-more-jobs-from-related-company`
+    `/jobs/${ctx.params?.jobId}/get-more-jobs-from-related-company`,
+    {
+      headers: {
+        Authorization: ctx.req.cookies.accessToken,
+      },
+    }
   )
 
   return {
@@ -34,9 +57,45 @@ export default function JobDetailPage({
   moreJobsCompany,
 }: any) {
   const [showmore, setshowmore] = useState(false)
+  const { user, status } = useAuth()
+  const router = useRouter()
 
   async function applyJob() {
-    
+    try {
+      await axios.post('/applications', {
+        jobId: job.id,
+      })
+
+      window.location.reload()
+    } catch (error: any) {
+      toast(error.message)
+    }
+  }
+
+  async function toggleSaveJob(e: any) {
+    try {
+      e.preventDefault()
+
+      if (user && status === 'loggedIn') {
+        if (job.isSavedByThisAuthenticatedUser) {
+          await axios.delete('/saved-jobs/', {
+            data: {
+              jobId: job.id,
+            },
+          })
+        } else {
+          await axios.post('/saved-jobs/', {
+            jobId: job.id,
+          })
+        }
+
+        window.location.reload()
+      }
+
+      router.push('/auth/signin')
+    } catch (error: any) {
+      toast(error.message)
+    }
   }
 
   return (
@@ -69,7 +128,7 @@ export default function JobDetailPage({
                 <div className="mt-4 flex flex-col gap-2">
                   <div className="flex gap-2 items-center">
                     <IdCardIcon />
-                    <div>{job.salary}</div>
+                    <div>{job.salary.formatted}</div>
                   </div>
                   <div className="flex gap-2 items-center">
                     <DrawingPinIcon />
@@ -78,10 +137,22 @@ export default function JobDetailPage({
                 </div>
 
                 <div className="mt-6 justify-self-end flex gap-4">
-                  <Button className="w-[150px]">Apply this job</Button>
-                  <Button variant="secondary">
-                    <BookmarkIcon className="mr-2 h-4 w-4" />
-                    Save
+                  <Button
+                    className="w-[150px]"
+                    onClick={applyJob}
+                    disabled={job.isAppliedByThisAuthenticatedUser}
+                  >
+                    {job.isAppliedByThisAuthenticatedUser
+                      ? 'Applied'
+                      : 'Apply this job'}
+                  </Button>
+                  <Button variant="secondary" onClick={toggleSaveJob}>
+                    {job.isSavedByThisAuthenticatedUser ? (
+                      <BookmarkFilledIcon className="mr-2 h-4 w-4" />
+                    ) : (
+                      <BookmarkIcon className="mr-2 h-4 w-4" />
+                    )}
+                    {job.isSavedByThisAuthenticatedUser ? 'Saved' : 'Save'}
                   </Button>
                 </div>
               </div>
@@ -166,7 +237,7 @@ export default function JobDetailPage({
                         salary: similarJob.salary,
                         location: similarJob.location,
                         lastActive: similarJob.createdAt,
-                        savedStatus: false,
+                        savedStatus: similarJob.isSaved,
                       }}
                     />
                   )

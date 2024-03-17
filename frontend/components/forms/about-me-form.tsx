@@ -16,7 +16,7 @@ function AboutMeForm() {
       setLoading(true)
       const result = await axios.get('/account/about')
 
-      setValue(result.data.data.about)
+      setValue(result.data.data.about ?? '')
     } catch (error: any) {
       toast(error.message)
     } finally {
@@ -24,8 +24,10 @@ function AboutMeForm() {
     }
   }
 
-  async function updateAbout() {
+  async function updateAbout(e: any) {
     try {
+      e.preventDefault()
+
       setLoading(true)
       await axios.put('/account/about', {
         about: value,
@@ -44,7 +46,7 @@ function AboutMeForm() {
     getAbout()
   }, [])
   return (
-    <div className="mt-2">
+    <form className="mt-2" onSubmit={updateAbout}>
       <div className="grid w-full max-w-[600px] gap-1.5 mb-4">
         <Label htmlFor="bio" className="text-md font-bold">
           About you
@@ -75,13 +77,14 @@ function AboutMeForm() {
 
       {editMode ? (
         <div className="flex gap-2">
-          <Button className="w-max" onClick={updateAbout}>
+          <Button className="w-max" type="submit">
             Submit
           </Button>
           <Button
             className="w-max"
             variant="secondary"
             onClick={() => setEditMode(false)}
+            type="button"
           >
             Cancel
           </Button>
@@ -91,7 +94,7 @@ function AboutMeForm() {
           Edit
         </Button>
       )}
-    </div>
+    </form>
   )
 }
 

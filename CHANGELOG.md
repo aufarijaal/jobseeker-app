@@ -17,6 +17,7 @@
   - Fitur manajemen akun (nama, email, password)
 
 - Sabtu, 16 Maret 2024 17:28:00
+
   - Fitur job experience dan educations (CRUD Complete) + additional utilitiy functions
   - Middleware untuk check email availability
   - Fitur upload photo profile
@@ -25,3 +26,9 @@
   - Fitur manajemen akun (nama, email, password) - Sekarang baru komplit, di commit sebelumnya baru UI nya aja
   - Add repo screenshots 🍀
   - Other small changes
+
+- Minggu, 17 Maret 2024 17:35:00
+- Hapus controller, services
+- Ubah route /applications ke yang lebih simple
+- Pisah button save job ke komponent tersendiri
+- Other small fixes

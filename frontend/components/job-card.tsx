@@ -23,6 +23,7 @@ import { toast } from 'sonner'
 import { useAuth } from '@/context/authContext'
 import { useRouter } from 'next/router'
 import axios from '@/lib/axios'
+import JobSaveUnsaveButton from './job-save-unsave-button'
 
 export function JobCard(props: {
   jobInfo: {
@@ -46,36 +47,6 @@ export function JobCard(props: {
   }
   afterToggling: () => void
 }) {
-  const { user, status } = useAuth()
-  const router = useRouter()
-
-  async function toggleSaveJob(e: any) {
-    try {
-      e.stopPropagation()
-      e.preventDefault()
-
-      if (user && status === 'loggedIn') {
-        if (props.jobInfo.savedByThisJobSeeker) {
-          await axios.delete('/saved-jobs/', {
-            data: {
-              jobId: props.jobInfo.id,
-            },
-          })
-        } else {
-          await axios.post('/saved-jobs/', {
-            jobId: props.jobInfo.id,
-          })
-        }
-
-        return props.afterToggling()
-      }
-
-      router.push('/auth/signin')
-    } catch (error: any) {
-      toast(error.message)
-    }
-  }
-
   return (
     <Link href={`/job/${props.jobInfo.id}`}>
       <Card className="w-full flex-shrink-0 dark:border-border dark:hover:border-gray-600 transition-colors cursor-pointer">
@@ -111,18 +82,10 @@ export function JobCard(props: {
             {'Posted ' + props.jobInfo.createdAt}
           </div>
 
-          <Button
-            onClick={toggleSaveJob}
-            variant={
-              props.jobInfo.savedByThisJobSeeker ? 'secondary' : 'default'
-            }
-          >
-            {props.jobInfo.savedByThisJobSeeker ? (
-              <BookmarkFilledIcon />
-            ) : (
-              <BookmarkIcon />
-            )}
-          </Button>
+          <JobSaveUnsaveButton
+            jobId={props.jobInfo.id}
+            status={props.jobInfo.savedByThisJobSeeker}
+          />
         </CardFooter>
       </Card>
     </Link>

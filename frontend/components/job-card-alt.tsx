@@ -17,14 +17,18 @@ import {
 } from '@radix-ui/react-icons'
 import { formatLastActive } from '@/lib/utils'
 import Link from 'next/link'
+import JobSaveUnsaveButton from './job-save-unsave-button'
 
 export function JobCardAlt(props: {
   jobInfo: {
-    id: number,
+    id: number
     title: string
     companyImageUrl: string
     companyTitle: string
-    salary: string
+    salary: {
+      raw: number
+      formatted: string
+    }
     location: string
     lastActive: string
     savedStatus: boolean
@@ -53,7 +57,7 @@ export function JobCardAlt(props: {
           <ul className="flex flex-col gap-2 text-gray-300 text-xs font-semibold">
             <li className="flex gap-4 items-center">
               <IdCardIcon />
-              <span>{props.jobInfo.salary}</span>
+              <span>{props.jobInfo.salary.formatted}</span>
             </li>
             <li className="flex gap-4 items-center">
               <DrawingPinIcon />
@@ -66,9 +70,10 @@ export function JobCardAlt(props: {
             <ClockIcon />
             {formatLastActive(props.jobInfo.lastActive)}
           </div>
-          <Button>
-            <BookmarkIcon />
-          </Button>
+          <JobSaveUnsaveButton
+            jobId={props.jobInfo.id}
+            status={props.jobInfo.savedStatus}
+          />
         </CardFooter>
       </Card>
     </Link>

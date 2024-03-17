@@ -1,5 +1,4 @@
 import express from 'express'
-import * as jobController from '../controllers/jobController'
 import exctractUserId from '../middleware/extractUserId'
 import { Request, Response } from 'express'
 import prisma from '../../prisma/client'
@@ -98,37 +97,24 @@ router.get('/', exctractUserId, async (req: Request, res: Response) => {
       .then((savedJobs) => {
         return savedJobs.map((savedJob) => savedJob.jobId)
       })
-      .catch(() => [])
 
-    const formattedJobsData = jobs.map((job) => {
-      let savedByThisJobSeeker = false
-
-      if ((req as any).userId) {
-        savedByThisJobSeeker = savedJobsId.some((jobId) => jobId === job.id)
-      }
-
-      return {
-        id: job.id,
-        title: job.title,
-        description: job.description,
-        requirements: job.requirements,
-        location: job.location,
-        salary: {
-          raw: job.salary,
-          formatted: convertRupiah(job.salary as any, {
-            floatingPoint: 0,
-          }),
-        },
-        createdAt: job.createdAt.toLocaleDateString(),
-        companyId: job.companyId,
-        employerId: job.employerId,
-        company: {
-          name: job.company.name,
-          logo: job.company.logo,
-        },
-        savedByThisJobSeeker,
-      }
-    })
+    const formattedJobsData = jobs.map((job) => ({
+      ...job,
+      savedByThisJobSeeker: (req as any).userId
+        ? savedJobsId.includes(job.id as any)
+        : false,
+      salary: {
+        raw: job.salary,
+        formatted: convertRupiah(job.salary as any, {
+          floatingPoint: 0,
+        }),
+      },
+      createdAt: job.createdAt.toLocaleDateString(),
+      company: {
+        name: job.company.name,
+        logo: job.company.logo,
+      },
+    }))
 
     return res.send({
       data: formattedJobsData,
@@ -140,14 +126,243 @@ router.get('/', exctractUserId, async (req: Request, res: Response) => {
   }
 })
 
-router.get('/:jobId', exctractUserId, jobController.show)
+router.get(
+  '/:jobId',
+  exctractUserId,
+  async function show(req: Request, res: Response) {
+    try {
+      const { jobId } = req.params
 
-router.get('/:excludedId/get-similar', exctractUserId, jobController.getSimilar)
+      const job = await prisma.job.findFirstOrThrow({
+        select: {
+          id: true,
+          title: true,
+          salary: true,
+          location: true,
+          description: true,
+          requirements: true,
+          company: {
+            select: {
+              id: true,
+              name: true,
+              about: true,
+              slug: true,
+              logo: true,
+              location: true,
+            },
+          },
+        },
+        where: {
+          id: {
+            equals: parseInt(jobId),
+          },
+        },
+      })
+
+      const isAppliedByThisAuthenticatedUser = await prisma.application
+        .findFirst({
+          where: {
+            jobId: job.id,
+            jobSeekerId: (req as any).userId,
+          },
+        })
+        .then((application) => {
+          return application !== null
+        })
+
+      const isSavedByThisAuthenticatedUser = await prisma.savedJob
+        .findFirst({
+          where: {
+            jobId: job.id,
+            jobSeekerId: (req as any).userId,
+          },
+        })
+        .then((savedJob) => {
+          return savedJob !== null
+        })
+
+      res.send({
+        data: {
+          ...job,
+          salary: {
+            raw: job.salary,
+            formatted: convertRupiah(job.salary as any, {
+              floatingPoint: 0,
+            }),
+          },
+          isAppliedByThisAuthenticatedUser,
+          isSavedByThisAuthenticatedUser,
+        },
+      })
+    } catch (error) {
+      console.log(error)
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error)
+    }
+  }
+)
+
+router.get(
+  '/:excludedId/get-similar',
+  exctractUserId,
+  async (req: Request, res: Response) => {
+    try {
+      const { excludedId } = req.params
+
+      const excludedJob = await prisma.job.findFirstOrThrow({
+        select: {
+          category: {
+            select: {
+              slug: true,
+            },
+          },
+        },
+        where: {
+          id: parseInt(excludedId),
+        },
+      })
+
+      const similarJobs = await prisma.job.findMany({
+        select: {
+          id: true,
+          title: true,
+          salary: true,
+          location: true,
+          createdAt: true,
+          updatedAt: true,
+          company: {
+            select: {
+              name: true,
+              logo: true,
+            },
+          },
+        },
+        where: {
+          category: {
+            slug: {
+              equals: excludedJob.category.slug,
+            },
+          },
+          id: {
+            not: parseInt(excludedId),
+          },
+        },
+        take: 3,
+      })
+
+      if ((req as any).userId) {
+        const savedJobsId = await prisma.savedJob
+          .findMany({
+            select: {
+              jobId: true,
+            },
+            where: {
+              jobSeekerId: (req as any).userId,
+            },
+          })
+          .then((savedJobs) => savedJobs.map((savedJob) => savedJob.jobId))
+
+        return res.send({
+          data: similarJobs.map((similarJob) => ({
+            ...similarJob,
+            salary: {
+              raw: similarJob.salary,
+              formatted: convertRupiah(similarJob.salary as any, {
+                floatingPoint: 0,
+              }),
+            },
+            isSaved: savedJobsId.includes(similarJob.id),
+          })),
+        })
+      }
+
+      res.send({
+        data: similarJobs,
+      })
+    } catch (error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error)
+    }
+  }
+)
 
 router.get(
   '/:excludedId/get-more-jobs-from-related-company',
   exctractUserId,
-  jobController.getMoreFromRelatedCompany
+  async (req: Request, res: Response) => {
+    try {
+      const { excludedId } = req.params
+
+      const excludedJob = await prisma.job.findFirstOrThrow({
+        select: {
+          company: {
+            select: {
+              slug: true,
+            },
+          },
+        },
+        where: {
+          id: parseInt(excludedId),
+        },
+      })
+
+      const relatedJobs = await prisma.job.findMany({
+        select: {
+          id: true,
+          title: true,
+          salary: true,
+          location: true,
+          createdAt: true,
+          updatedAt: true,
+          company: {
+            select: {
+              name: true,
+              logo: true,
+            },
+          },
+        },
+        where: {
+          company: {
+            slug: excludedJob.company.slug,
+          },
+          id: {
+            not: parseInt(excludedId),
+          },
+        },
+        take: 3,
+      })
+
+      if ((req as any).userId) {
+        const savedJobsId = await prisma.savedJob
+          .findMany({
+            select: {
+              jobId: true,
+            },
+            where: {
+              jobSeekerId: (req as any).userId,
+            },
+          })
+          .then((savedJobs) => savedJobs.map((savedJob) => savedJob.jobId))
+
+        return res.send({
+          data: relatedJobs.map((relatedJob) => ({
+            ...relatedJob,
+            salary: {
+              raw: relatedJob.salary,
+              formatted: convertRupiah(relatedJob.salary as any, {
+                floatingPoint: 0,
+              }),
+            },
+            isSaved: savedJobsId.includes(relatedJob.id),
+          })),
+        })
+      }
+
+      res.send({
+        data: relatedJobs,
+      })
+    } catch (error) {
+      res.status(StatusCodes.INTERNAL_SERVER_ERROR).send(error)
+    }
+  }
 )
 
 export default router

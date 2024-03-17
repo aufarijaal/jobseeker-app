@@ -7,7 +7,7 @@ import prisma from '../../prisma/client'
 const applicationRouter = express.Router()
 
 applicationRouter.post(
-  '/job-seeker-apply',
+  '/',
   verifyToken,
   async (req: Request, res: Response) => {
     try {
